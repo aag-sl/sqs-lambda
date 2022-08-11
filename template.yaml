@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-queue-lambda-setup
+
+  Sample SAM Template for a distributed messaging system with Amazon SQS and AWS Lambda
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 20
+    Runtime: python3.8
+
+Resources:
+#  MonkeysOnTreeQueuePolicy:
+#    Type: AWS::SQS::QueuePolicy
+#    DependsOn: MonkeysOnTreeQueue
+#    Properties:
+#      Queues:
+#        - !Ref MonkeysOnTreeQueue
+#      PolicyDocument:
+#        Statement:
+#          - Action:
+#            Effect: "Allow"
+#            Resource: !GetAtt MonkeysOnTreeQueue.Arn
+#            Principal:
+#              AWS:
+#                - !Ref AWS::AccountId
+
+  MonkeysOnTreeQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "monkeys-on-tree"
+
+  MonkeysOnTreeQueueHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/
+      Handler: queue_trigger_lambda.lambda_handler
+      Events:
+        QueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MonkeysOnTreeQueue.Arn
+            BatchSize: 1
+
+Outputs:
+  MonkeysOnTreeQueueArn:
+    Description: "Queue ARN"
+    Value: !GetAtt MonkeysOnTreeQueue.Arn
+
